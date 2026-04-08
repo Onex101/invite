@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Xeno's 29th Birthday</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- ====== XP BOOT SCREEN ====== -->
+  <div id="boot-screen" class="boot-screen" onclick="startBoot()">
+    <div class="boot-content">
+      <div class="boot-logo">
+        <img src="assets/full-logo.png" alt="Windows XP" class="boot-logo-img">
+      </div>
+      <div class="boot-loader" id="boot-loader">
+        <div class="boot-loader-track">
+          <div class="boot-loader-blocks" id="boot-loader-blocks">
+            <span class="boot-block"></span>
+            <span class="boot-block"></span>
+            <span class="boot-block"></span>
+          </div>
+        </div>
+      </div>
+      <p class="boot-tap" id="boot-tap">tap anywhere to start</p>
+    </div>
+    <p class="boot-copyright">Copyright © 1985-2026 Microsoft Corporation</p>
+  </div>
+
+  <!-- ====== XP WELCOME SCREEN ====== -->
+  <div id="welcome-screen" class="welcome-screen hidden">
+    <div class="welcome-content">
+      <div class="welcome-left"></div>
+      <div class="welcome-center">
+        <div class="welcome-spinner" id="welcome-spinner"></div>
+        <div class="welcome-text" id="welcome-text">Welcome</div>
+      </div>
+      <div class="welcome-right"></div>
+    </div>
+    <div class="welcome-bar-top"></div>
+    <div class="welcome-bar-bottom"></div>
+  </div>
+
+  <!-- ====== DESKTOP (hidden until boot completes) ====== -->
+  <div id="desktop-layer" class="desktop-layer hidden">
+    <!-- Confetti Canvas -->
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- Desktop Icons -->
+    <div class="desktop">
+      <div class="desktop-icon" data-window="main-window">
+        <div class="desktop-icon-img">🎤</div>
+        <span>birthday.exe</span>
+      </div>
+      <div class="desktop-icon" data-window="rsvp-window">
+        <div class="desktop-icon-img">📧</div>
+        <span>rsvp.exe</span>
+      </div>
+    </div>
+
+    <!-- ====== MAIN WINDOW ====== -->
+    <div class="win-window hidden" id="main-window" data-name="🎤 birthday.exe">
+      <div class="win-titlebar" onmousedown="startDrag(event, 'main-window')" ontouchstart="startDrag(event, 'main-window')">
+        <div class="win-titlebar-left">
+          <span class="win-titlebar-icon">🎤</span>
+          <span class="win-titlebar-text">birthday.exe</span>
+        </div>
+        <div class="win-titlebar-buttons">
+          <button class="win-btn-minimize" onclick="minimizeWindow('main-window'); event.stopPropagation();" aria-label="Minimize">
+            <svg width="9" height="9" viewBox="0 0 9 9"><rect x="1" y="7" width="7" height="1" fill="currentColor"/></svg>
+          </button>
+          <button class="win-btn-maximize" onclick="maximizeWindow('main-window'); event.stopPropagation();" aria-label="Maximize">
+            <svg width="9" height="9" viewBox="0 0 9 9"><rect x="1" y="1" width="7" height="7" fill="none" stroke="currentColor" stroke-width="1"/></svg>
+          </button>
+          <button class="win-btn-close" onclick="closeWindow('main-window'); event.stopPropagation();" aria-label="Close">
+            <svg width="9" height="9" viewBox="0 0 9 9"><line x1="1" y1="1" x2="8" y2="8" stroke="currentColor" stroke-width="1.5"/><line x1="8" y1="1" x2="1" y2="8" stroke="currentColor" stroke-width="1.5"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="win-menubar">
+        <span>File</span>
+        <span>Edit</span>
+        <span>View</span>
+        <span>Help</span>
+      </div>
+      <div class="win-body">
+        <h1 class="win-heading">Xeno is turning 29!</h1>
+        <p class="win-subheading">Karaoke Party</p>
+
+        <div class="schmidt-gif">
+          <img src="https://media1.tenor.com/m/_-v43PZRU4UAAAAd/schmidt-new.gif" alt="Schmidt from New Girl saying 29">
+          <p class="gif-caption">^ the energy ^</p>
+        </div>
+
+        <div class="win-groupbox">
+          <div class="win-groupbox-title">Event Details</div>
+          <table class="info-table">
+            <tr><td class="info-label">Date:</td><td class="info-value">Thursday, April 30th 2026</td></tr>
+            <tr><td class="info-label">Time:</td><td class="info-value">7:00 PM (don't be late!!)</td></tr>
+            <tr><td class="info-label">Where:</td><td class="info-value">Location TBA <i>(i'll let you know soon, promise)</i></td></tr>
+            <tr><td class="info-label">What:</td><td class="info-value">Karaoke! Prepare your go-to song</td></tr>
+          </table>
+        </div>
+
+        <div class="win-groupbox">
+          <div class="win-groupbox-title">Countdown</div>
+          <div class="countdown" id="countdown">
+            <div class="countdown-item">
+              <span class="countdown-number" id="days">00</span>
+              <span class="countdown-label">DAYS</span>
+            </div>
+            <div class="countdown-item">
+              <span class="countdown-number" id="hours">00</span>
+              <span class="countdown-label">HRS</span>
+            </div>
+            <div class="countdown-item">
+              <span class="countdown-number" id="minutes">00</span>
+              <span class="countdown-label">MIN</span>
+            </div>
+            <div class="countdown-item">
+              <span class="countdown-number" id="seconds">00</span>
+              <span class="countdown-label">SEC</span>
+            </div>
+          </div>
+        </div>
+
+        <button class="xp-button xp-button-primary" onclick="openWindow('rsvp-window')">
+          RSVP Now
+        </button>
+      </div>
+      <div class="win-statusbar">
+        <span>Ready</span>
+        <span id="statusbar-time"></span>
+      </div>
+    </div>
+
+    <!-- ====== RSVP WINDOW ====== -->
+    <div class="win-window hidden" id="rsvp-window" data-name="📧 rsvp.exe">
+      <div class="win-titlebar" onmousedown="startDrag(event, 'rsvp-window')" ontouchstart="startDrag(event, 'rsvp-window')">
+        <div class="win-titlebar-left">
+          <span class="win-titlebar-icon">📧</span>
+          <span class="win-titlebar-text">rsvp.exe</span>
+        </div>
+        <div class="win-titlebar-buttons">
+          <button class="win-btn-minimize" onclick="minimizeWindow('rsvp-window'); event.stopPropagation();" aria-label="Minimize">
+            <svg width="9" height="9" viewBox="0 0 9 9"><rect x="1" y="7" width="7" height="1" fill="currentColor"/></svg>
+          </button>
+          <button class="win-btn-maximize" onclick="maximizeWindow('rsvp-window'); event.stopPropagation();" aria-label="Maximize">
+            <svg width="9" height="9" viewBox="0 0 9 9"><rect x="1" y="1" width="7" height="7" fill="none" stroke="currentColor" stroke-width="1"/></svg>
+          </button>
+          <button class="win-btn-close" onclick="closeWindow('rsvp-window'); event.stopPropagation();" aria-label="Close">
+            <svg width="9" height="9" viewBox="0 0 9 9"><line x1="1" y1="1" x2="8" y2="8" stroke="currentColor" stroke-width="1.5"/><line x1="8" y1="1" x2="1" y2="8" stroke="currentColor" stroke-width="1.5"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="win-body">
+        <p class="rsvp-intro">Drop your deets and i'll send you a calendar invite.</p>
+        <form id="rsvp-form" onsubmit="submitRSVP(event)">
+          <div class="form-group">
+            <label for="rsvp-name">Name:</label>
+            <input type="text" id="rsvp-name" name="name" required placeholder="Your name here">
+          </div>
+          <div class="form-group">
+            <label for="rsvp-email">Email:</label>
+            <input type="email" id="rsvp-email" name="email" required placeholder="you@hotmail.com">
+            <span class="form-hint">i'll send a calendar invite to this email. no spam, i promise.</span>
+          </div>
+          <div class="form-group">
+            <label>Are you coming?</label>
+            <div class="radio-group">
+              <label class="radio-option">
+                <input type="radio" name="attending" value="Yes" required>
+                <span class="radio-label">(*^_^*) Obviously, I'm there!</span>
+              </label>
+              <label class="radio-option">
+                <input type="radio" name="attending" value="Maybe">
+                <span class="radio-label">(^_~) Let me check...</span>
+              </label>
+              <label class="radio-option">
+                <input type="radio" name="attending" value="No">
+                <span class="radio-label">(T_T) I can't (this better be good)</span>
+              </label>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="xp-button xp-button-primary" id="rsvp-submit-btn">OK</button>
+            <button type="reset" class="xp-button">Cancel</button>
+          </div>
+          <div id="rsvp-status" class="rsvp-status"></div>
+        </form>
+      </div>
+      <div class="win-statusbar">
+        <span>if you don't come, i'm picking your karaoke song for you next time.</span>
+      </div>
+    </div>
+
+    <!-- ====== TASKBAR ====== -->
+    <div class="taskbar">
+      <button class="start-button">
+        <img src="assets/logo.png" alt="" class="start-logo">
+        <span class="start-text">start</span>
+      </button>
+      <div class="taskbar-items" id="taskbar-items"></div>
+      <div class="taskbar-tray">
+        <span id="tray-time"></span>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
