@@ -47,7 +47,7 @@
     <canvas id="confetti-canvas"></canvas>
 
     <!-- Desktop Icons -->
-    <div class="desktop">
+    <div class="desktop" id="desktop-icons">
       <div class="desktop-icon" data-window="main-window">
         <div class="desktop-icon-img">🎤</div>
         <span>birthday.exe</span>
@@ -55,6 +55,14 @@
       <div class="desktop-icon" data-window="rsvp-window">
         <div class="desktop-icon-img">📧</div>
         <span>rsvp.exe</span>
+      </div>
+      <div class="desktop-icon" data-window="docs-window">
+        <div class="desktop-icon-img">📁</div>
+        <span>My Documents</span>
+      </div>
+      <div class="desktop-icon" data-notepad-new="true">
+        <div class="desktop-icon-img">📝</div>
+        <span>Notepad</span>
       </div>
     </div>
 
@@ -194,6 +202,188 @@
       </div>
     </div>
 
+    <!-- ====== MY DOCUMENTS WINDOW ====== -->
+    <div class="win-window hidden" id="docs-window" data-name="📁 My Documents">
+      <div class="win-titlebar" onmousedown="startDrag(event, 'docs-window')" ontouchstart="startDrag(event, 'docs-window')">
+        <div class="win-titlebar-left">
+          <span class="win-titlebar-icon">📁</span>
+          <span class="win-titlebar-text">My Documents</span>
+        </div>
+        <div class="win-titlebar-buttons">
+          <button class="win-btn-minimize" onclick="minimizeWindow('docs-window'); event.stopPropagation();" aria-label="Minimize">
+            <svg width="9" height="9" viewBox="0 0 9 9"><rect x="1" y="7" width="7" height="1" fill="currentColor"/></svg>
+          </button>
+          <button class="win-btn-maximize" onclick="maximizeWindow('docs-window'); event.stopPropagation();" aria-label="Maximize">
+            <svg width="9" height="9" viewBox="0 0 9 9"><rect x="1" y="1" width="7" height="7" fill="none" stroke="currentColor" stroke-width="1"/></svg>
+          </button>
+          <button class="win-btn-close" onclick="closeWindow('docs-window'); event.stopPropagation();" aria-label="Close">
+            <svg width="9" height="9" viewBox="0 0 9 9"><line x1="1" y1="1" x2="8" y2="8" stroke="currentColor" stroke-width="1.5"/><line x1="8" y1="1" x2="1" y2="8" stroke="currentColor" stroke-width="1.5"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="win-toolbar">
+        <span>📁 Address</span>
+        <span class="win-toolbar-path">C:\My Documents</span>
+      </div>
+      <div class="win-body docs-body">
+        <div class="docs-files">
+          <div class="docs-file" onclick="openEasterEgg('readme')">
+            <div class="docs-file-icon">📄</div>
+            <span>readme.txt</span>
+          </div>
+          <div class="docs-file" onclick="openEasterEgg('karaoke_playlist')">
+            <div class="docs-file-icon">🎵</div>
+            <span>karaoke_playlist.txt</span>
+          </div>
+          <div class="docs-file" onclick="openEasterEgg('secret_recipe')">
+            <div class="docs-file-icon">🍰</div>
+            <span>secret_recipe.txt</span>
+          </div>
+        </div>
+      </div>
+      <div class="win-statusbar">
+        <span>3 object(s)</span>
+      </div>
+    </div>
+
+    <!-- ====== NOTEPAD WINDOW ====== -->
+    <div class="win-window hidden" id="notepad-window" data-name="📝 Notepad">
+      <div class="win-titlebar" onmousedown="startDrag(event, 'notepad-window')" ontouchstart="startDrag(event, 'notepad-window')">
+        <div class="win-titlebar-left">
+          <span class="win-titlebar-icon">📝</span>
+          <span class="win-titlebar-text" id="notepad-title">Untitled - Notepad</span>
+        </div>
+        <div class="win-titlebar-buttons">
+          <button class="win-btn-minimize" onclick="minimizeWindow('notepad-window'); event.stopPropagation();" aria-label="Minimize">
+            <svg width="9" height="9" viewBox="0 0 9 9"><rect x="1" y="7" width="7" height="1" fill="currentColor"/></svg>
+          </button>
+          <button class="win-btn-maximize" onclick="maximizeWindow('notepad-window'); event.stopPropagation();" aria-label="Maximize">
+            <svg width="9" height="9" viewBox="0 0 9 9"><rect x="1" y="1" width="7" height="7" fill="none" stroke="currentColor" stroke-width="1"/></svg>
+          </button>
+          <button class="win-btn-close" onclick="closeWindow('notepad-window'); event.stopPropagation();" aria-label="Close">
+            <svg width="9" height="9" viewBox="0 0 9 9"><line x1="1" y1="1" x2="8" y2="8" stroke="currentColor" stroke-width="1.5"/><line x1="8" y1="1" x2="1" y2="8" stroke="currentColor" stroke-width="1.5"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="win-menubar">
+        <span onclick="resetNotepad()">File</span>
+        <span>Edit</span>
+        <span>Format</span>
+        <span>Help</span>
+      </div>
+      <div class="win-body notepad-body">
+        <textarea id="notepad-textarea" class="notepad-textarea" placeholder="Type your message here..."></textarea>
+        <div id="notepad-save-bar" class="notepad-save-bar">
+          <div class="notepad-save-row">
+            <label for="notepad-author">Your name:</label>
+            <input type="text" id="notepad-author" placeholder="Anonymous" class="notepad-input">
+          </div>
+          <div class="notepad-save-row">
+            <label for="notepad-filename">Save as:</label>
+            <input type="text" id="notepad-filename" placeholder="my_note.txt" class="notepad-input">
+            <button class="xp-button xp-button-primary" onclick="saveNote()" id="notepad-save-btn">💾 Save to Desktop</button>
+          </div>
+          <div id="notepad-save-status" class="notepad-save-status"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== RIGHT-CLICK CONTEXT MENU ====== -->
+    <div class="context-menu hidden" id="context-menu">
+      <div class="context-item" onclick="contextAction('refresh')">
+        <span class="context-text">Refresh</span>
+        <span class="context-shortcut">F5</span>
+      </div>
+      <div class="context-separator"></div>
+      <div class="context-item" onclick="contextAction('view')">
+        <span class="context-text">View</span>
+        <span class="context-arrow">▶</span>
+      </div>
+      <div class="context-item" onclick="contextAction('sort')">
+        <span class="context-text">Sort By</span>
+        <span class="context-arrow">▶</span>
+      </div>
+      <div class="context-separator"></div>
+      <div class="context-item" onclick="contextAction('new')">
+        <span class="context-text">New</span>
+        <span class="context-arrow">▶</span>
+      </div>
+      <div class="context-separator"></div>
+      <div class="context-item" onclick="contextAction('properties')">
+        <span class="context-text">Properties</span>
+      </div>
+    </div>
+
+    <!-- ====== START MENU ====== -->
+    <div class="start-menu hidden" id="start-menu">
+      <div class="start-menu-header">
+        <div class="start-menu-avatar">🎤</div>
+        <span class="start-menu-username">Xeno</span>
+      </div>
+      <div class="start-menu-body">
+        <div class="start-menu-left">
+          <div class="start-menu-item start-menu-pinned" onclick="startMenuOpen('main-window')">
+            <span class="start-menu-item-icon">🎤</span>
+            <span class="start-menu-item-text"><strong>birthday.exe</strong></span>
+          </div>
+          <div class="start-menu-item start-menu-pinned" onclick="startMenuOpen('rsvp-window')">
+            <span class="start-menu-item-icon">📧</span>
+            <span class="start-menu-item-text"><strong>rsvp.exe</strong></span>
+          </div>
+          <div class="start-menu-separator"></div>
+          <div class="start-menu-item" onclick="startMenuOpen('main-window')">
+            <span class="start-menu-item-icon">🎶</span>
+            <span class="start-menu-item-text">Karaoke Player</span>
+          </div>
+          <div class="start-menu-item" onclick="startMenuOpen('rsvp-window')">
+            <span class="start-menu-item-icon">📝</span>
+            <span class="start-menu-item-text">Outlook RSVP</span>
+          </div>
+          <div class="start-menu-item" onclick="openNotepadNew()">
+            <span class="start-menu-item-icon">📝</span>
+            <span class="start-menu-item-text">Notepad</span>
+          </div>
+          <div class="start-menu-separator"></div>
+          <div class="start-menu-item start-menu-all-programs">
+            <span class="start-menu-item-icon"></span>
+            <span class="start-menu-item-text">All Programs</span>
+            <span class="start-menu-all-arrow">▶</span>
+          </div>
+        </div>
+        <div class="start-menu-right">
+          <div class="start-menu-item" onclick="startMenuOpen('docs-window')">
+            <span class="start-menu-item-icon">📁</span>
+            <span class="start-menu-item-text"><strong>My Documents</strong></span>
+          </div>
+          <div class="start-menu-item" onclick="startMenuOpen('main-window')">
+            <span class="start-menu-item-icon">🖼️</span>
+            <span class="start-menu-item-text">My Pictures</span>
+          </div>
+          <div class="start-menu-item" onclick="startMenuOpen('main-window')">
+            <span class="start-menu-item-icon">🎵</span>
+            <span class="start-menu-item-text">My Music</span>
+          </div>
+          <div class="start-menu-separator"></div>
+          <div class="start-menu-item" onclick="startMenuOpen('main-window')">
+            <span class="start-menu-item-icon">⚙️</span>
+            <span class="start-menu-item-text">Control Panel</span>
+          </div>
+          <div class="start-menu-item">
+            <span class="start-menu-item-icon">❓</span>
+            <span class="start-menu-item-text">Help and Support</span>
+          </div>
+        </div>
+      </div>
+      <div class="start-menu-footer">
+        <button class="start-menu-power" onclick="startMenuAction('logoff')">
+          <span>🔑</span> Log Off
+        </button>
+        <button class="start-menu-power" onclick="startMenuAction('shutdown')">
+          <span>🔴</span> Turn Off Computer
+        </button>
+      </div>
+    </div>
+
     <!-- ====== TASKBAR ====== -->
     <div class="taskbar">
       <button class="start-button">
@@ -203,6 +393,17 @@
       <div class="taskbar-items" id="taskbar-items"></div>
       <div class="taskbar-tray">
         <span id="tray-time"></span>
+      </div>
+    </div>
+
+    <!-- ====== CLIPPY ====== -->
+    <div class="clippy" id="clippy">
+      <div class="clippy-bubble hidden" id="clippy-bubble">
+        <div class="clippy-bubble-text" id="clippy-text"></div>
+        <button class="clippy-close" onclick="dismissClippy()">×</button>
+      </div>
+      <div class="clippy-body" onclick="clippySpeak()" title="Click me!">
+        <div class="clippy-sprite">📎</div>
       </div>
     </div>
   </div>

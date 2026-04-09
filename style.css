@@ -17,6 +17,13 @@ body {
   background: #3a6ea5;
   color: #000000;
   position: relative;
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M3 1L3 19L8 14L12 21L15 19.5L11 12.5L17 12.5Z' fill='white' stroke='black' stroke-width='1' stroke-linejoin='round'/%3E%3C/svg%3E") 3 1, auto;
+}
+
+/* XP pointer cursor for interactive elements */
+a, button, [onclick], .desktop-icon, .start-button, .taskbar-item,
+.radio-option, .win-menubar span, input[type="radio"] {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M7 1C7 1 7 8 7 10L4 7L4 12L11 18L11 14L14 18L17 16L14 12L18 12L12 6L12 1Z' fill='white' stroke='black' stroke-width='1' stroke-linejoin='round'/%3E%3C/svg%3E") 10 1, pointer;
 }
 
 /* ===== BOOT SCREEN ===== */
@@ -227,8 +234,12 @@ body {
   left: 12px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 6px;
   z-index: 1;
+  max-height: calc(100vh - 60px);
+  max-height: calc(100dvh - 60px);
+  align-content: flex-start;
 }
 
 .desktop-icon {
@@ -240,7 +251,7 @@ body {
   padding: 4px;
   border: 1px solid transparent;
   border-radius: 3px;
-  width: 70px;
+  width: 68px;
   text-align: center;
 }
 
@@ -703,6 +714,364 @@ body {
 .rsvp-status.error { color: #cc0000; }
 .rsvp-status.loading { color: #808080; }
 
+/* ===== RIGHT-CLICK CONTEXT MENU ===== */
+.context-menu {
+  position: fixed;
+  background: #ffffff;
+  border: 1px solid #7f9db9;
+  box-shadow: 2px 2px 6px rgba(0,0,0,0.3);
+  z-index: 5000;
+  min-width: 180px;
+  padding: 2px 0;
+  font-size: 11px;
+}
+
+.context-menu.hidden {
+  display: none;
+}
+
+.context-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 24px 4px 28px;
+  cursor: default;
+  position: relative;
+}
+
+.context-item:hover {
+  background: #316ac5;
+  color: #ffffff;
+}
+
+.context-text {
+  flex: 1;
+}
+
+.context-shortcut {
+  color: #808080;
+  margin-left: 20px;
+  font-size: 10px;
+}
+
+.context-item:hover .context-shortcut {
+  color: #d0d0d0;
+}
+
+.context-arrow {
+  font-size: 8px;
+  margin-left: 12px;
+}
+
+.context-separator {
+  height: 1px;
+  background: #d6d2c2;
+  margin: 3px 2px;
+}
+
+/* ===== START MENU ===== */
+.start-menu {
+  position: fixed;
+  bottom: 30px;
+  left: 0;
+  width: 380px;
+  background: #ffffff;
+  border: 2px solid #0054e3;
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  box-shadow: 3px -2px 12px rgba(0,0,0,0.35);
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.start-menu.hidden {
+  display: none;
+}
+
+.start-menu-header {
+  background: linear-gradient(180deg, #1f5fc7 0%, #2968d0 30%, #1f5fc7 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  font-weight: bold;
+  font-size: 14px;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+}
+
+.start-menu-avatar {
+  width: 40px;
+  height: 40px;
+  background: #d0d8e8;
+  border: 2px solid #ffffff;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+}
+
+.start-menu-username {
+  letter-spacing: 0.5px;
+}
+
+.start-menu-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.start-menu-left {
+  flex: 1;
+  background: #ffffff;
+  padding: 4px 0;
+  border-right: 1px solid #d6d2c2;
+}
+
+.start-menu-right {
+  flex: 1;
+  background: #d3e5fa;
+  padding: 4px 0;
+}
+
+.start-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  font-size: 11px;
+  cursor: default;
+}
+
+.start-menu-item:hover {
+  background: #316ac5;
+  color: #ffffff;
+}
+
+.start-menu-item-icon {
+  font-size: 18px;
+  width: 24px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.start-menu-item-text {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.start-menu-pinned {
+  padding: 6px 10px;
+}
+
+.start-menu-all-programs {
+  justify-content: space-between;
+}
+
+.start-menu-all-arrow {
+  font-size: 8px;
+  color: #808080;
+}
+
+.start-menu-item.start-menu-all-programs:hover .start-menu-all-arrow {
+  color: #ffffff;
+}
+
+.start-menu-separator {
+  height: 1px;
+  background: #d6d2c2;
+  margin: 4px 10px;
+}
+
+.start-menu-right .start-menu-separator {
+  background: #a8c8e8;
+}
+
+.start-menu-footer {
+  background: linear-gradient(180deg, #3a7bdb 0%, #2968c8 100%);
+  padding: 4px 8px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.start-menu-power {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  font-family: 'Tahoma', sans-serif;
+  font-size: 11px;
+  background: linear-gradient(180deg, #ffffff 0%, #dde8f6 100%);
+  border: 1px solid #003c74;
+  border-radius: 3px;
+  cursor: pointer;
+  color: #000000;
+}
+
+.start-menu-power:hover {
+  background: linear-gradient(180deg, #ffffff 0%, #c8d8f0 100%);
+}
+
+/* ===== MY DOCUMENTS / FILE EXPLORER ===== */
+.win-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 6px;
+  background: #ece9d8;
+  border-bottom: 1px solid #aca899;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+.win-toolbar-path {
+  flex: 1;
+  background: #ffffff;
+  border: 1px solid #7f9db9;
+  padding: 2px 4px;
+  font-size: 11px;
+}
+
+.docs-body {
+  background: #ffffff;
+}
+
+/* ===== My Documents File Grid ===== */
+.docs-files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 8px;
+}
+
+.docs-file {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 4px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  width: 80px;
+  text-align: center;
+  cursor: default;
+}
+
+.docs-file:hover {
+  background: rgba(11, 97, 255, 0.15);
+  border-color: rgba(11, 97, 255, 0.4);
+}
+
+.docs-file-icon {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.docs-file span {
+  font-size: 11px;
+  word-break: break-all;
+  line-height: 1.2;
+}
+
+/* ===== Notepad ===== */
+.notepad-body {
+  display: flex;
+  flex-direction: column;
+  padding: 0 !important;
+  border: none !important;
+}
+
+.notepad-textarea {
+  flex: 1;
+  width: 100%;
+  min-height: 150px;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: 'Lucida Console', 'Courier New', monospace;
+  font-size: 13px;
+  padding: 4px 6px;
+  background: #ffffff;
+  color: #000000;
+  line-height: 1.4;
+}
+
+.notepad-textarea:read-only {
+  background: #fafafa;
+  color: #333333;
+}
+
+.notepad-save-bar {
+  border-top: 1px solid #aca899;
+  padding: 8px 10px;
+  background: #ece9d8;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.notepad-save-bar.hidden {
+  display: none;
+}
+
+.notepad-save-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.notepad-save-row label {
+  white-space: nowrap;
+  min-width: 70px;
+  text-align: right;
+}
+
+.notepad-input {
+  flex: 1;
+  padding: 3px 4px;
+  font-family: 'Tahoma', sans-serif;
+  font-size: 11px;
+  border: 1px solid #7f9db9;
+  border-radius: 2px;
+  background: #ffffff;
+  color: #000000;
+}
+
+.notepad-input:focus {
+  border-color: #316ac5;
+  box-shadow: 0 0 0 1px #99c1ea;
+  outline: none;
+}
+
+.notepad-save-status {
+  font-size: 11px;
+  text-align: center;
+  min-height: 1em;
+}
+
+.notepad-save-status.success { color: #008000; }
+.notepad-save-status.error { color: #cc0000; }
+
+/* ===== Dynamic Desktop Note Icons ===== */
+.desktop-note-icon {
+  position: relative;
+}
+
+.desktop-note-icon .note-author {
+  font-size: 9px;
+  color: #cccccc;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+}
+
 /* ===== XP TASKBAR ===== */
 .taskbar {
   position: fixed;
@@ -714,7 +1083,6 @@ body {
   border-top: 1px solid #5c8fe8;
   display: flex;
   align-items: center;
-  padding: 0 2px;
   gap: 3px;
   z-index: 1000;
 }
@@ -746,6 +1114,11 @@ body {
 
 .start-button:active {
   background: linear-gradient(180deg, #1d6b19 0%, #22761e 50%, #3c963a 100%);
+}
+
+.start-button.active {
+  background: linear-gradient(180deg, #1d6b19 0%, #22761e 50%, #3c963a 100%);
+  box-shadow: inset 0 2px 3px rgba(0,0,0,0.3);
 }
 
 .start-logo {
@@ -803,31 +1176,128 @@ body {
   font-size: 11px;
   color: #ffffff;
   white-space: nowrap;
-  height: 24px;
+  height: 100%;
   display: flex;
   align-items: center;
   border-left: 1px solid #1150b5;
   border-radius: 2px;
 }
 
-/* ===== Mobile ===== */
-@media (max-width: 599px) {
+/* ===== CLIPPY ===== */
+.clippy {
+  position: fixed;
+  bottom: 40px;
+  right: 20px;
+  z-index: 900;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.clippy-body {
+  cursor: pointer;
+  font-size: 3rem;
+  filter: drop-shadow(2px 2px 3px rgba(0,0,0,0.3));
+  user-select: none;
+}
+
+.clippy-sprite {
+  transform: rotate(-15deg);
+  animation: clippyBounce 3s ease-in-out infinite;
+}
+
+.clippy-body:active .clippy-sprite {
+  animation: none;
+  transform: rotate(-15deg) scale(0.9);
+}
+
+@keyframes clippyBounce {
+  0%, 100% { transform: rotate(-15deg) translateY(0); }
+  50% { transform: rotate(-15deg) translateY(-6px); }
+}
+
+.clippy-bubble {
+  background: #ffffcc;
+  border: 1px solid #000000;
+  border-radius: 8px;
+  padding: 10px 28px 10px 10px;
+  margin-bottom: 6px;
+  max-width: 220px;
+  font-size: 11px;
+  line-height: 1.4;
+  position: relative;
+  box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
+}
+
+.clippy-bubble.hidden {
+  display: none;
+}
+
+.clippy-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  right: 20px;
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid #ffffcc;
+}
+
+.clippy-bubble::before {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  right: 19px;
+  width: 0;
+  height: 0;
+  border-left: 9px solid transparent;
+  border-right: 9px solid transparent;
+  border-top: 9px solid #000000;
+}
+
+.clippy-close {
+  position: absolute;
+  top: 2px;
+  right: 6px;
+  background: none;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  color: #666666;
+  padding: 0 2px;
+  line-height: 1;
+}
+
+.clippy-close:hover {
+  color: #000000;
+}
+
+/* ===== Mobile & Tablet ===== */
+@media (max-width: 899px) {
   .desktop {
     top: 8px;
     left: 8px;
     flex-direction: row;
-    gap: 12px;
+    flex-wrap: wrap;
+    gap: 14px 10px;
+    max-height: none;
   }
 
   .desktop-icon {
-    width: 60px;
+    width: 72px;
   }
 
   .desktop-icon-img {
-    font-size: 1.6rem;
+    font-size: 2.2rem;
   }
 
-  .win-window {
+  .desktop-icon span {
+    font-size: 12px;
+  }
+
+  .win-window:not(.hidden):not(.minimized) {
     width: 100% !important;
     height: calc(100vh - 30px) !important;
     height: calc(100dvh - 30px) !important;
@@ -840,5 +1310,195 @@ body {
 
   .win-titlebar {
     border-radius: 0;
+    min-height: 36px;
+    padding: 4px 6px;
+  }
+
+  .win-titlebar-buttons {
+    gap: 4px;
+  }
+
+  .win-titlebar-buttons button {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
+  }
+
+  .win-titlebar-buttons button svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  /* Larger text and inputs for mobile readability */
+  body {
+    font-size: 15px;
+  }
+
+  .win-body {
+    padding: 16px;
+  }
+
+  .win-heading {
+    font-size: 1.5rem;
+  }
+
+  .win-subheading {
+    font-size: 1rem;
+  }
+
+  .info-table td {
+    font-size: 14px;
+    padding: 5px 6px;
+  }
+
+  .win-groupbox {
+    padding: 16px 12px 12px;
+    margin: 14px 0;
+  }
+
+  .win-groupbox-title {
+    font-size: 13px;
+  }
+
+  .countdown-number {
+    font-size: 1.5rem;
+  }
+
+  .countdown-label {
+    font-size: 10px;
+  }
+
+  .form-group label {
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+
+  .form-group input[type="text"],
+  .form-group input[type="email"] {
+    font-size: 16px;
+    padding: 8px;
+  }
+
+  .form-hint {
+    font-size: 12px;
+  }
+
+  .radio-option {
+    font-size: 14px;
+    padding: 4px 0;
+  }
+
+  .radio-label {
+    font-size: 14px;
+  }
+
+  .rsvp-intro {
+    font-size: 14px;
+  }
+
+  .xp-button {
+    font-size: 14px;
+    padding: 8px 20px;
+  }
+
+  .rsvp-status {
+    font-size: 13px;
+  }
+
+  .win-statusbar {
+    font-size: 12px;
+  }
+
+  .win-menubar span {
+    font-size: 12px;
+  }
+
+  .gif-caption {
+    font-size: 12px;
+  }
+
+  /* Start menu mobile */
+  .start-menu {
+    width: 100%;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+
+  .start-menu-item {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+
+  .start-menu-item-icon {
+    font-size: 22px;
+    width: 28px;
+  }
+
+  .start-menu-header {
+    font-size: 16px;
+    padding: 10px 12px;
+  }
+
+  .start-menu-power {
+    font-size: 13px;
+    padding: 6px 12px;
+  }
+
+  /* Context menu mobile */
+  .context-item {
+    padding: 8px 24px 8px 28px;
+    font-size: 14px;
+  }
+
+  /* My Documents mobile */
+  .docs-file {
+    width: 70px;
+  }
+
+  .docs-file-icon {
+    font-size: 1.6rem;
+  }
+
+  .docs-file span {
+    font-size: 13px;
+  }
+
+  /* Notepad mobile */
+  .notepad-textarea {
+    font-size: 16px;
+    padding: 8px;
+  }
+
+  .notepad-save-row {
+    font-size: 14px;
+    flex-wrap: wrap;
+  }
+
+  .notepad-save-row label {
+    font-size: 14px;
+    min-width: auto;
+    text-align: left;
+  }
+
+  .notepad-input {
+    font-size: 16px;
+    padding: 8px;
+  }
+
+  .notepad-save-row .xp-button {
+    width: 100%;
+    margin-top: 4px;
+  }
+
+  .win-toolbar {
+    font-size: 13px;
+    padding: 4px 8px;
+  }
+
+  .win-toolbar-path {
+    font-size: 13px;
+    padding: 4px 6px;
   }
 }

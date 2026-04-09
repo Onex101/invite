@@ -67,6 +67,13 @@ function createPartyEvent() {
 function doPost(e) {
   try {
     var data = JSON.parse(e.postData.contents);
+
+    // Handle note saving
+    if (data.action === 'saveNote') {
+      return saveNoteToSheet(data);
+    }
+
+    // Otherwise it's an RSVP
     var name = data.name;
     var email = data.email;
     var attending = data.attending;
@@ -142,9 +149,77 @@ function doPost(e) {
   }
 }
 
-// Required for CORS preflight
+// Required for CORS preflight and fetching data
 function doGet(e) {
+  var action = e && e.parameter && e.parameter.action;
+
+  if (action === 'getNotes') {
+    return getNotesFromSheet();
+  }
+
   return ContentService
     .createTextOutput(JSON.stringify({ status: 'ok', message: 'RSVP endpoint is live' }))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+// ===== Desktop Notes =====
+function saveNoteToSheet(data) {
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName('Notes');
+    if (!sheet) {
+      sheet = ss.insertSheet('Notes');
+      sheet.appendRow(['Timestamp', 'Author', 'Filename', 'Content']);
+    }
+
+    var author = (data.author || 'Anonymous').substring(0, 50);
+    var filename = (data.filename || 'note.txt').substring(0, 50);
+    var content = (data.content || '').substring(0, 2000);
+
+    sheet.appendRow([
+      new Date().toISOString(),
+      author,
+      filename,
+      content
+    ]);
+
+    return ContentService
+      .createTextOutput(JSON.stringify({ status: 'success' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ status: 'error', message: err.message }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function getNotesFromSheet() {
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName('Notes');
+
+    if (!sheet || sheet.getLastRow() <= 1) {
+      return ContentService
+        .createTextOutput(JSON.stringify({ status: 'ok', notes: [] }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    var data = sheet.getRange(2, 1, sheet.getLastRow() - 1, 4).getValues();
+    var notes = data.map(function(row) {
+      return {
+        timestamp: row[0],
+        author: row[1],
+        filename: row[2],
+        content: row[3]
+      };
+    });
+
+    return ContentService
+      .createTextOutput(JSON.stringify({ status: 'ok', notes: notes }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ status: 'error', message: err.message }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
 }

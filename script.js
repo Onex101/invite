@@ -78,16 +78,14 @@ document.addEventListener('click', (e) => {
   const isMobile = window.innerWidth < 600 || 'ontouchstart' in window;
 
   if (isMobile) {
-    // Mobile: first tap selects, second tap on same icon opens
-    if (lastTappedIcon === icon && (now - lastTapTime) < 1000) {
+    // Mobile: single tap opens immediately
+    if (icon.dataset.notepadNew) {
+      openNotepadNew();
+    } else if (icon.dataset.noteId) {
+      openSavedNote(icon.dataset.noteId);
+    } else if (winId) {
       openWindow(winId);
-      lastTappedIcon = null;
-      return;
     }
-    document.querySelectorAll('.desktop-icon').forEach(i => i.classList.remove('selected'));
-    icon.classList.add('selected');
-    lastTappedIcon = icon;
-    lastTapTime = now;
   } else {
     // Desktop: single click selects
     document.querySelectorAll('.desktop-icon').forEach(i => i.classList.remove('selected'));
@@ -98,7 +96,12 @@ document.addEventListener('click', (e) => {
 // Desktop: double-click opens
 document.addEventListener('dblclick', (e) => {
   const icon = e.target.closest('.desktop-icon');
-  if (icon && icon.dataset.window) {
+  if (!icon) return;
+  if (icon.dataset.notepadNew) {
+    openNotepadNew();
+  } else if (icon.dataset.noteId) {
+    openSavedNote(icon.dataset.noteId);
+  } else if (icon.dataset.window) {
     openWindow(icon.dataset.window);
   }
 });
@@ -122,8 +125,8 @@ function initWindows() {
 }
 
 function centerWindow(win) {
-  const isMobile = window.innerWidth < 600;
-  if (isMobile) return; // mobile is fullscreen via CSS
+  const isMobile = window.innerWidth < 900 || 'ontouchstart' in window;
+  if (isMobile) return; // mobile/tablet is fullscreen via CSS
   const rect = win.getBoundingClientRect();
   const w = Math.min(460, window.innerWidth - 40);
   const maxH = window.innerHeight - 60;
@@ -147,6 +150,8 @@ function openWindow(id) {
   }
 
   win.classList.remove('hidden', 'minimized');
+  // Force display in case CSS specificity issues on mobile
+  win.style.display = 'flex';
   if (!win.style.left || win.style.left === '0px') centerWindow(win);
   focusWindow(id);
   renderTaskbar();
@@ -157,6 +162,8 @@ function closeWindow(id) {
   if (!win) return;
   win.classList.add('hidden');
   win.classList.remove('minimized', 'maximized', 'focused');
+  // Clear inline display so the .hidden class takes effect cleanly
+  win.style.display = '';
   windowState[id].open = false;
   windowState[id].minimized = false;
   windowState[id].maximized = false;
@@ -168,6 +175,7 @@ function minimizeWindow(id) {
   if (!win) return;
   win.classList.add('minimized');
   win.classList.remove('focused');
+  win.style.display = '';
   windowState[id].minimized = true;
   renderTaskbar();
 }
@@ -237,7 +245,8 @@ let dragWin = null, dragOffsetX = 0, dragOffsetY = 0;
 function startDrag(e, id) {
   const win = document.getElementById(id);
   if (!win || windowState[id]?.maximized) return;
-  if (window.innerWidth < 600) return; // no drag on mobile
+  // No drag when window is fullscreen (mobile/tablet)
+  if (window.innerWidth < 900) return;
 
   // Don't drag if clicking a button
   if (e.target.closest('.win-titlebar-buttons')) return;
@@ -393,7 +402,7 @@ function animateConfetti() {
 }
 
 // ===== RSVP Form Submission =====
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby1Mw_XAH0WPOoxBK9S3GY_FaClWkU1-zDrZ0h4taWzIMX-BqkJXWaC4vW0TYzQfyzQ/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyBy-1lxaXwTfVOfMicPyry6TLsatz9xVo6VhjHq2C3kL9G4kOZSWbZZD1LzDtAz1ks/exec';
 
 function submitRSVP(e) {
   e.preventDefault();
@@ -456,3 +465,349 @@ updateCountdown();
 setInterval(updateCountdown, 1000);
 updateClock();
 setInterval(updateClock, 10000);
+
+// ===== Right-Click Context Menu =====
+const contextMenu = document.getElementById('context-menu');
+
+document.addEventListener('contextmenu', (e) => {
+  // Only show custom menu on desktop area (not inside windows/taskbar)
+  const isDesktop = e.target.closest('.desktop-layer') &&
+    !e.target.closest('.win-window') &&
+    !e.target.closest('.taskbar') &&
+    !e.target.closest('.start-menu');
+
+  if (isDesktop) {
+    e.preventDefault();
+    closeStartMenu();
+    contextMenu.classList.remove('hidden');
+    // Position the menu, keeping it in viewport
+    let x = e.clientX;
+    let y = e.clientY;
+    contextMenu.style.left = x + 'px';
+    contextMenu.style.top = y + 'px';
+    // Adjust if off-screen
+    requestAnimationFrame(() => {
+      const rect = contextMenu.getBoundingClientRect();
+      if (rect.right > window.innerWidth) {
+        contextMenu.style.left = (window.innerWidth - rect.width - 4) + 'px';
+      }
+      if (rect.bottom > window.innerHeight - 30) {
+        contextMenu.style.top = (window.innerHeight - 30 - rect.height - 4) + 'px';
+      }
+    });
+  } else {
+    contextMenu.classList.add('hidden');
+  }
+});
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.context-menu')) {
+    contextMenu.classList.add('hidden');
+  }
+});
+
+function contextAction(action) {
+  contextMenu.classList.add('hidden');
+  if (action === 'refresh') {
+    // Fun fake refresh — flash the desktop
+    const desktop = document.getElementById('desktop-layer');
+    desktop.style.opacity = '0.7';
+    setTimeout(() => { desktop.style.opacity = '1'; }, 150);
+  } else if (action === 'properties') {
+    openWindow('main-window');
+  }
+}
+
+// ===== Start Menu =====
+const startMenu = document.getElementById('start-menu');
+const startButton = document.querySelector('.start-button');
+let startMenuOpen_flag = false;
+
+startButton.addEventListener('click', (e) => {
+  e.stopPropagation();
+  contextMenu.classList.add('hidden');
+  toggleStartMenu();
+});
+
+function toggleStartMenu() {
+  startMenuOpen_flag = !startMenuOpen_flag;
+  if (startMenuOpen_flag) {
+    startMenu.classList.remove('hidden');
+    startButton.classList.add('active');
+  } else {
+    closeStartMenu();
+  }
+}
+
+function closeStartMenu() {
+  startMenuOpen_flag = false;
+  startMenu.classList.add('hidden');
+  startButton.classList.remove('active');
+}
+
+function startMenuOpen(windowId) {
+  closeStartMenu();
+  openWindow(windowId);
+}
+
+function startMenuAction(action) {
+  closeStartMenu();
+  if (action === 'shutdown') {
+    // Fun: go back to boot screen
+    const desktopLayer = document.getElementById('desktop-layer');
+    const bootScreen = document.getElementById('boot-screen');
+    const welcomeScreen = document.getElementById('welcome-screen');
+    desktopLayer.classList.add('hidden');
+    // Close all windows
+    Object.keys(windowState).forEach(id => {
+      closeWindow(id);
+    });
+    // Reset welcome screen so it works again on next boot
+    welcomeScreen.style.display = '';
+    welcomeScreen.classList.add('hidden');
+    welcomeScreen.classList.remove('fade-out');
+    document.getElementById('welcome-text').textContent = 'Welcome';
+    // Reset boot screen
+    bootScreen.style.display = '';
+    bootScreen.classList.remove('booting');
+    document.getElementById('boot-loader').classList.remove('active');
+    document.getElementById('boot-tap').classList.remove('hide');
+    booted = false;
+  } else if (action === 'logoff') {
+    // Fun: flash to welcome screen briefly
+    const welcomeScreen = document.getElementById('welcome-screen');
+    welcomeScreen.style.display = '';
+    welcomeScreen.classList.remove('hidden', 'fade-out');
+    document.getElementById('welcome-text').textContent = 'Logging off...';
+    setTimeout(() => {
+      document.getElementById('welcome-text').textContent = 'Welcome';
+      welcomeScreen.classList.add('fade-out');
+      setTimeout(() => {
+        welcomeScreen.style.display = 'none';
+      }, 600);
+    }, 1500);
+  }
+}
+
+// Close start menu when clicking elsewhere
+document.addEventListener('click', (e) => {
+  if (startMenuOpen_flag && !e.target.closest('.start-menu') && !e.target.closest('.start-button')) {
+    closeStartMenu();
+  }
+});
+
+// ===== My Documents — Easter Eggs =====
+const EASTER_EGGS = {
+  readme: {
+    title: 'readme.txt',
+    content: "WELCOME TO XENO'S DESKTOP\n========================\n\nIf you're reading this, you've been invited to the\nmost legendary karaoke night of 2026.\n\nPrepare your vocal cords.\nPrepare your dignity.\nPrepare to lose both.\n\n- Xeno"
+  },
+  karaoke_playlist: {
+    title: 'karaoke_playlist.txt',
+    content: "XENO'S FAVOURITE SONGS \u266b\n========================\n\n1. Butterflies - Michael Jackson\n2. Cry Me A River - Justin Timberlake\n3. I Need You - Jon Batiste\n4. Rock With You - Michael Jackson\n5. Heart, Mind and Soul - El DeBarge\n6. Never Too Much - Luther Vandross\n7. Lovely Day - Bill Withers\n8. Maria Maria - Santana\n\nif you sing any of these at the party\nyou will instantly become my best friend."
+  },
+  secret_recipe: {
+    title: 'secret_recipe.txt',
+    content: "SECRET BIRTHDAY CAKE RECIPE\n===========================\n\nIngredients:\n- 1 store-bought cake\n- 29 candles (NOT 30, I'm not 30 yet)\n- 1 lighter\n- The audacity to pretend I baked it\n\nInstructions:\n1. Open box\n2. Place candles\n3. Take credit\n4. Accept compliments gracefully"
+  },
+
+};
+
+function openEasterEgg(id) {
+  const egg = EASTER_EGGS[id];
+  if (!egg) return;
+  const textarea = document.getElementById('notepad-textarea');
+  const title = document.getElementById('notepad-title');
+  const saveBar = document.getElementById('notepad-save-bar');
+
+  textarea.value = egg.content;
+  textarea.readOnly = true;
+  title.textContent = egg.title + ' - Notepad';
+  saveBar.classList.add('hidden');
+  openWindow('notepad-window');
+}
+
+// ===== Notepad — Create & Save Notes =====
+function openNotepadNew() {
+  closeStartMenu();
+  const textarea = document.getElementById('notepad-textarea');
+  const title = document.getElementById('notepad-title');
+  const saveBar = document.getElementById('notepad-save-bar');
+  const status = document.getElementById('notepad-save-status');
+
+  textarea.value = '';
+  textarea.readOnly = false;
+  title.textContent = 'Untitled - Notepad';
+  saveBar.classList.remove('hidden');
+  status.textContent = '';
+  document.getElementById('notepad-author').value = '';
+  document.getElementById('notepad-filename').value = '';
+  document.getElementById('notepad-save-btn').disabled = false;
+  document.getElementById('notepad-save-btn').textContent = '💾 Save to Desktop';
+  openWindow('notepad-window');
+}
+
+function resetNotepad() {
+  openNotepadNew();
+}
+
+function saveNote() {
+  const textarea = document.getElementById('notepad-textarea');
+  const author = document.getElementById('notepad-author').value.trim() || 'Anonymous';
+  let filename = document.getElementById('notepad-filename').value.trim();
+  const content = textarea.value.trim();
+  const btn = document.getElementById('notepad-save-btn');
+  const status = document.getElementById('notepad-save-status');
+
+  if (!content) {
+    status.textContent = 'Write something first!';
+    status.className = 'notepad-save-status error';
+    return;
+  }
+
+  // Sanitize filename
+  filename = filename.replace(/[^a-zA-Z0-9_\-. ]/g, '');
+  if (!filename) filename = 'note_' + Date.now();
+  if (!filename.endsWith('.txt')) filename += '.txt';
+
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+  status.textContent = '';
+
+  fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'saveNote',
+      author: author,
+      filename: filename,
+      content: content
+    })
+  }).catch(() => {});
+
+  // no-cors means we can't read the response, so treat as success immediately
+  // (the data saves even if the opaque response looks like a failure)
+  setTimeout(() => {
+    status.textContent = '✅ Saved! Your note is now on the desktop for everyone.';
+    status.className = 'notepad-save-status success';
+    btn.textContent = 'Saved!';
+    addNoteToDesktop({ author, filename, content, timestamp: new Date().toISOString() });
+    setTimeout(() => loadSavedNotes(), 3000);
+  }, 1500);
+}
+
+// ===== Desktop Notes — Load from Google Sheet =====
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function addNoteToDesktop(note) {
+  const desktop = document.getElementById('desktop-icons');
+  // Don't add duplicates
+  if (desktop.querySelector('[data-note-id="' + CSS.escape(note.filename) + '"]')) return;
+
+  const icon = document.createElement('div');
+  icon.className = 'desktop-icon desktop-note-icon';
+  icon.dataset.noteId = note.filename;
+  icon.innerHTML = '<div class="desktop-icon-img">📄</div>' +
+    '<span>' + escapeHtml(note.filename) + '</span>' +
+    '<span class="note-author">by ' + escapeHtml(note.author) + '</span>';
+  desktop.appendChild(icon);
+}
+
+function openSavedNote(noteId) {
+  // Try to find the note content — check if we have it cached
+  const cached = loadedNotes.find(n => n.filename === noteId);
+  if (cached) {
+    const textarea = document.getElementById('notepad-textarea');
+    const title = document.getElementById('notepad-title');
+    const saveBar = document.getElementById('notepad-save-bar');
+
+    textarea.value = cached.content;
+    textarea.readOnly = true;
+    title.textContent = cached.filename + ' (by ' + cached.author + ') - Notepad';
+    saveBar.classList.add('hidden');
+    openWindow('notepad-window');
+  }
+}
+
+let loadedNotes = [];
+
+function loadSavedNotes() {
+  fetch(APPS_SCRIPT_URL + '?action=getNotes', { redirect: 'follow' })
+    .then(r => {
+      console.log('Notes response status:', r.status);
+      return r.json();
+    })
+    .then(data => {
+      console.log('Notes data:', data);
+      if (data.notes && data.notes.length > 0) {
+        loadedNotes = data.notes;
+        data.notes.forEach(note => addNoteToDesktop(note));
+      }
+    })
+    .catch(err => {
+      console.error('Failed to load notes:', err);
+    });
+}
+
+// Load saved notes when desktop appears
+const _origFinishBoot = finishBoot;
+finishBoot = function() {
+  _origFinishBoot();
+  setTimeout(() => loadSavedNotes(), 500);
+  setTimeout(() => startClippy(), 2000);
+};
+
+// ===== Clippy =====
+const CLIPPY_MESSAGES = [
+  "It looks like you're trying to RSVP to a party! Would you like help?",
+  "Hi! I'm Clippy, your Office Assistant. Xeno is turning 29!",
+  "Did you know? Karaoke means 'empty orchestra' in Japanese. 🎤",
+  "You should check out My Documents. There's some good stuff in there.",
+  "Pro tip: Don't pick Bohemian Rhapsody unless you've got the range.",
+  "It looks like you're writing a note! Don't forget to save it. 💾",
+  "Fun fact: The countdown is real. April 30th is coming fast!",
+  "Have you RSVP'd yet? Click rsvp.exe on the desktop!",
+  "Try right-clicking the desktop. Just like the good old days.",
+  "🎵 Butterflies by Michael Jackson is on Xeno's playlist. Good taste!",
+  "You look like someone who'd absolutely crush Lovely Day at karaoke.",
+  "I see you haven't shut down the computer. Good. Never leave.",
+  "Try the Start menu! It's very nostalgic.",
+  "Remember: Venue is TBA. Xeno promises they'll let you know soon.",
+  "Leave a note on the desktop so other guests can read it!",
+];
+
+let clippyTimeout = null;
+let clippyIndex = 0;
+
+function startClippy() {
+  // Show first message after desktop loads
+  clippyIndex = Math.floor(Math.random() * CLIPPY_MESSAGES.length);
+  showClippyMessage(CLIPPY_MESSAGES[0]);
+  // Auto-dismiss after 8 seconds
+  clippyTimeout = setTimeout(() => dismissClippy(), 8000);
+}
+
+function clippySpeak() {
+  clearTimeout(clippyTimeout);
+  clippyIndex = (clippyIndex + 1) % CLIPPY_MESSAGES.length;
+  showClippyMessage(CLIPPY_MESSAGES[clippyIndex]);
+  clippyTimeout = setTimeout(() => dismissClippy(), 8000);
+}
+
+function showClippyMessage(msg) {
+  const bubble = document.getElementById('clippy-bubble');
+  const text = document.getElementById('clippy-text');
+  text.textContent = msg;
+  bubble.classList.remove('hidden');
+}
+
+function dismissClippy() {
+  clearTimeout(clippyTimeout);
+  const bubble = document.getElementById('clippy-bubble');
+  bubble.classList.add('hidden');
+}
