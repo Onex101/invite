@@ -1196,24 +1196,25 @@ a, button, [onclick], .desktop-icon, .start-button, .taskbar-item,
 
 .clippy-body {
   cursor: pointer;
-  font-size: 3rem;
   filter: drop-shadow(2px 2px 3px rgba(0,0,0,0.3));
   user-select: none;
 }
 
-.clippy-sprite {
-  transform: rotate(-15deg);
+.clippy-img {
+  width: 80px;
+  height: auto;
   animation: clippyBounce 3s ease-in-out infinite;
+  pointer-events: none;
 }
 
-.clippy-body:active .clippy-sprite {
+.clippy-body:active .clippy-img {
   animation: none;
-  transform: rotate(-15deg) scale(0.9);
+  transform: scale(0.9);
 }
 
 @keyframes clippyBounce {
-  0%, 100% { transform: rotate(-15deg) translateY(0); }
-  50% { transform: rotate(-15deg) translateY(-6px); }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
 }
 
 .clippy-bubble {
